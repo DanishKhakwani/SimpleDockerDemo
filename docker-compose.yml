@@ -1,0 +1,20 @@
+ version: '2'
+ services:
+  db:
+    image: postgres
+  web:
+    build: .
+    command: |
+        bash -c 'bash -s <<EOF
+        ./wait-for-it.sh db:5432 &&
+        python myapp/manage.py makemigrations &&
+        python myapp/manage.py migrate &&
+        python myapp/manage.py loaddata myapp/initial.json &&
+        python myapp/manage.py runserver 0.0.0.0:8000
+        EOF'
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
